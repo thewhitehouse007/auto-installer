@@ -65,7 +65,7 @@ function ChocolateyInstalls {
 
 function OpenBrowserPage($name, $url) {
 	"Installing $name..."
-    start-process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList '$url'
+    start-process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
 	ContinueConfirmation
 
 }
