@@ -1,12 +1,12 @@
-PreChecks {
+function PreChecks {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-    IF ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) -eq False {
-        Write-Host -ForegroundColor Red "ERROR: This Script needs to run in admin mode"
+    IF (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))) {
+        Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This Script needs to run in admin mode"
         Start-Sleep -Seconds 5
         exit
     }
     IF (!(Test-Connection www.dropbox.com -Quiet -Count 2)) {
-        Write-Host -ForegroundColor Red "ERROR: This script requires internet access"
+        Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This script requires internet access"
         Start-Sleep -Seconds 5
         exit
     }
@@ -63,7 +63,7 @@ function ChocolateyInstalls {
     ContinueConfirmation
 }
 
-function OpenBrowserPage($name $url) {
+function OpenBrowserPage($name, $url) {
 	"Installing $name..."
     start-process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList '$url'
 	ContinueConfirmation
