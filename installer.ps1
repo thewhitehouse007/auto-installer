@@ -101,11 +101,14 @@ function ChocolateyInstalls {
             }
             '2' {
                 choco install -y defaultapps.config   
+		pause
                 choco install -y adminapps.config   
             } 
 	    '3' {
 	    	choco install -y defaultapps.config   
+		pause
                 choco install -y adminapps.config
+		pause
 		choco install -y devapps.config
 	    }
             'u' {
@@ -127,6 +130,18 @@ function RunWindowsUpdates {
 	Install-Module -Name PSWindowsUpdate -Force
 	Write-Host "Installing updates... (Computer will reboot in minutes...)" -ForegroundColor Green
 	Get-WindowsUpdate -AcceptAll -Install -ForceInstall -AutoReboot
+}
+
+function InstallWindowsRSAT {
+	Get-WindowsCapability -Name RSAT* -Online | Select-Object -Property DisplayName, State
+	$selection = Read-Host "Do you wish to install Windows RSAT Tools? (y/n)"
+        switch ($selection) {
+        	'y' {
+			Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online   
+            	}
+            	'n' {
+            	}
+        }
 }
 
 function RemoveUWPApps {
@@ -276,7 +291,6 @@ Set-Content -Path defaultapps.config -Value $defaultApps -Verbose
 Set-Content -Path adminapps.config -Value $adminApps -Verbose 
 Set-Content -Path devapps.config -Value $devApps -Verbose 
 
-
 ChocolateyInstalls
 
 OpenBrowserPage "Webex Meeting Tools" "https://www.webex.com/downloads.html"
@@ -285,9 +299,9 @@ DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/zhqmaxzw
 
 DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/dow6lsv0wfsalgs/JunosPulse.x64.msi?dl=1" pulse.msi
 
-OpenBrowserPage "Remote Server Administration Tools" "https://www.microsoft.com/en-au/download/details.aspx?id=45520"
-
 Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All
+
+InstallWindowsRSAT
 
 RunWindowsUpdates
 
