@@ -14,9 +14,49 @@ function PreChecks {
 
 function LicenseActivate {
 	"Activating license for Windows Evaluation"
-	slmgr /dlv
-	slmgr /rearm
+	slmgr /ato
 	ContinueConfirmation
+}
+
+function RenameComputer {
+	$computerName = Read-Host 'Enter New Computer Name (Suggestion: WinXX-XCustomerX'
+	Write-Host "Renaming this computer to: " $computerName  -ForegroundColor Yellow
+	Rename-Computer -NewName $computerName
+}
+
+function DisableSleeping {
+	Write-Host ""
+	Write-Host "Disable Sleep on AC Power..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	Powercfg /Change monitor-timeout-ac 20
+	Powercfg /Change standby-timeout-ac 0
+}
+
+function SetTimeZone {
+	Write-Host "Setting Time zone..." -ForegroundColor Green
+	Set-TimeZone -Name "E. Australia Standard Time"
+}
+
+function AddThisPCDesktopIcon {
+	Write-Host ""
+	Write-Host "Add 'This PC' Desktop Icon..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	$thisPCIconRegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
+	$thisPCRegValname = "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" 
+	$item = Get-ItemProperty -Path $thisPCIconRegPath -Name $thisPCRegValname -ErrorAction SilentlyContinue 
+	if ($item) { 
+		Set-ItemProperty  -Path $thisPCIconRegPath -name $thisPCRegValname -Value 0  
+	} 
+	else { 
+		New-ItemProperty -Path $thisPCIconRegPath -Name $thisPCRegValname -Value 0 -PropertyType DWORD | Out-Null  
+	} 
+}
+
+function SetExplorerOptions {
+	Write-Host "Applying file explorer settings..." -ForegroundColor Green
+	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f"
+	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v AutoCheckSelect /t REG_DWORD /d 0 /f"
+	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v LaunchTo /t REG_DWORD /d 1 /f"
 }
 
 function ShowChocMenu {
@@ -35,8 +75,16 @@ function ShowChocMenu {
 
 function ChocolateyInstalls {
     "Starting automatic file installation by chocolatey..."
-    powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
-    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";%ALLUSERSPROFILE%\chocolatey\bin", "Machine")
+    if (Check-Command -cmdname 'choco') {
+		Write-Host "Choco is already installed, skip installation."
+	}
+	else {
+		Write-Host ""
+		Write-Host "Installing Chocolate for Windows..." -ForegroundColor Green
+		Write-Host "------------------------------------" -ForegroundColor Green
+		Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+		[Environment]::SetEnvironmentVariable("Path", $env:Path + ";%ALLUSERSPROFILE%\chocolatey\bin", "Machine")
+	}	
     choco feature enable -n allowGlobalConfirmation
     choco upgrade chocolatey
     do {
@@ -61,6 +109,57 @@ function ChocolateyInstalls {
     until ($selection -eq 'q')
 
     ContinueConfirmation
+}
+
+function RunWindowsUpdates {	
+	Write-Host ""
+	Write-Host "Checking Windows updates..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	Install-Module -Name PSWindowsUpdate -Force
+	Write-Host "Installing updates... (Computer will reboot in minutes...)" -ForegroundColor Green
+	Get-WindowsUpdate -AcceptAll -Install -ForceInstall -AutoReboot
+}
+
+function RemoveUWPApps {
+	# To list all appx packages:
+	# Get-AppxPackage | Format-Table -Property Name,Version,PackageFullName
+	Write-Host "Removing UWP Rubbish..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	$uwpRubbishApps = @(
+		"Microsoft.MSPaint"
+		"Microsoft.Microsoft3DViewer"
+		"Microsoft.ZuneMusic"
+		"Microsoft.ZuneVideo"
+		"Microsoft.WindowsSoundRecorder"
+		"Microsoft.PowerAutomateDesktop"
+		"Microsoft.BingWeather"
+		"Microsoft.BingNews"
+		"Microsoft.Messaging"
+		"Microsoft.WindowsFeedbackHub"
+		"Microsoft.MicrosoftOfficeHub"
+		"Microsoft.MicrosoftSolitaireCollection"
+		"Microsoft.GetHelp"
+		"Microsoft.People"
+		"Microsoft.YourPhone"
+		"Microsoft.Getstarted"
+		"Microsoft.Microsoft3DViewer"
+		"Microsoft.WindowsMaps"
+		"Microsoft.MixedReality.Portal"
+		"Microsoft.SkypeApp"
+	)
+	foreach ($uwp in $uwpRubbishApps) {
+		Remove-UWP $uwp
+	}
+}
+
+function Remove-UWP {
+	param (
+		[string]$name
+	)
+
+	Write-Host "Removing UWP $name..." -ForegroundColor Yellow
+	Get-AppxPackage $name | Remove-AppxPackage
+	Get-AppxPackage $name | Remove-AppxPackage -AllUsers
 }
 
 function OpenBrowserPage($name, $url) {
@@ -99,14 +198,25 @@ cd $DOWNLOADS
 #Also check for internet and DNS resolution
 PreChecks
 
-"This will download and install all packages to build a system from scratch"
+"This will download and install all packages to build a system from a fresh Windows install"
 ContinueConfirmation
 
 LicenseActivate
 
+RenameComputer
+
+DisableSleeping
+
+SetTimeZone
+
+AddThisPCDesktopIcon
+
+SetExplorerOptions
+
+RemoveUWPApps
+
 DownloadInstall "PSTools" "https://dl.dropbox.com/s/jhj653f2iuz2x59/pstools.exe?dl=1" pstools.exe
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";c:\pstools\pstools\;c:\pstools\putty\", "Machine")
-
 
 $defaultApps = @"
 <?xml version="1.0" encoding="utf-8"?>
@@ -156,6 +266,7 @@ DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/dow6lsv0wfsa
 
 Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All
 
+RunWindowsUpdates
 
 "Installations are now completed!!!" 
 ContinueConfirmation
