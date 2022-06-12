@@ -20,8 +20,6 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
 - Set a New Computer Name
 - Disable Sleep on AC Power
 - Add 'This PC' Desktop Icon
-- Enable Developer Mode
-- Enable Remote Desktop
 - Install Chocolate for Windows
     - 7-Zip
     - Google Chrome
