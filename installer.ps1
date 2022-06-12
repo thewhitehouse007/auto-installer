@@ -1,3 +1,7 @@
+function Check-Command($cmdname) {
+    return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
+}
+
 function PreChecks {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     IF (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))) {
@@ -60,7 +64,6 @@ function SetExplorerOptions {
 }
 
 function ShowChocMenu {
-    Clear-Host
     Write-Host ...............................................
     Write-Host PRESS 1, 2 OR 3 to select your task, or q to QUIT.
     Write-Host IF this is the FIRST RUN press 3!
@@ -68,7 +71,8 @@ function ShowChocMenu {
     Write-Host .
     Write-Host 1 - Basic apps
     Write-Host 2 - PowerAdmin apps
-    Write-Host 3 - Upgrade apps
+    Write-Host 3 - Developer apps
+    Write-Host u - Upgrade apps
     Write-Host q - QUIT
     Write-Host .
 }
@@ -99,7 +103,12 @@ function ChocolateyInstalls {
                 choco install -y defaultapps.config   
                 choco install -y adminapps.config   
             } 
-            '3' {
+	    '3' {
+	    	choco install -y defaultapps.config   
+                choco install -y adminapps.config
+		choco install -y devapps.config
+	    }
+            'u' {
                 "Starting choco upgrade..."
                 choco upgrade all
             }
@@ -164,9 +173,8 @@ function Remove-UWP {
 
 function OpenBrowserPage($name, $url) {
 	"Installing $name..."
-    start-process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
+    	start-process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
 	ContinueConfirmation
-
 }
 
 function DownloadInstall($name, $url, $filename) {
@@ -185,7 +193,6 @@ function ContinueConfirmation {
 		$Confirmation = Read-Host "Done... Continue? [y/n]"
 	}
 }
-
 
 
 
@@ -222,13 +229,13 @@ $defaultApps = @"
 <?xml version="1.0" encoding="utf-8"?>
     <packages>
 	  <package id="virtualbox-guest-additions-guest.install" />
-      <package id="flashplayerplugin" />
 	  <package id="googlechrome" />
 	  <package id="7zip" />
 	  <package id="jre8" />
 	  <package id="notepadplusplus" />
 	  <package id="dropbox" />  
 	  <package id="teamviewer" />
+	  <package id="zoom" />
 	  <package id="avastfreeantivirus" />
 	  <package id="anydesk" />
     </packages>
@@ -247,14 +254,28 @@ $adminApps = @"
 	  <package id="chocolateygui" />
 	  <package id="windirstat" />
 	  <package id="openvpn" />
-	  <package id="rsat" />
+	  <package id="sysinternals" />
 	  <package id="forticlientvpn" />
 	  <package id="nmap" />
 	  <package id="mobaxterm" />
     </packages>
 "@
+$devApps = @"	                                  
+<?xml version="1.0" encoding="utf-8"?>
+    <packages>
+	  <package id="firefox" />
+	  <package id="python3" />
+	  <package id="dotnetfx" />
+	  <package id="git" />
+	  <package id="silverlight" />  
+	  <package id="vscode" />
+	  <package id="pycharm" />
+    </packages>
+"@
 Set-Content -Path defaultapps.config -Value $defaultApps -Verbose 
 Set-Content -Path adminapps.config -Value $adminApps -Verbose 
+Set-Content -Path devapps.config -Value $devApps -Verbose 
+
 
 ChocolateyInstalls
 
@@ -263,6 +284,8 @@ OpenBrowserPage "Webex Meeting Tools" "https://www.webex.com/downloads.html"
 DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/zhqmaxzwxsqm2g6/anyconnect-win-3.1.05152-pre-deploy-k9.msi?dl=1" anyconnect.msi
 
 DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/dow6lsv0wfsalgs/JunosPulse.x64.msi?dl=1" pulse.msi
+
+OpenBrowserPage "Remote Server Administration Tools" "https://www.microsoft.com/en-au/download/details.aspx?id=45520"
 
 Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All
 
