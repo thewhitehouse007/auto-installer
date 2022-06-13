@@ -144,12 +144,12 @@ function InstallWindowsRSAT {
         }
 }
 
-function UpdateBGInfoConfig {
+function UpdateBGInfoConfig($name, $url, $filename) {
 	"Configuring BGInfo Background Informaton Display..."
-    	"Downloading Configu File..."
-	$client.DownloadFile("https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1","$DOWNLOADS\BGCONFIG.BGI")
+    	"Downloading Config File..."
+	$client.DownloadFile("$url","$DOWNLOADS\$filename")
 	"Loading Configuration..."
-	& C:\BGinfo\BGINFO.EXE $DOWNLOADS\BGCONFIG.BGI /timer:0
+	& C:\BGinfo\BGINFO.EXE $DOWNLOADS\$filename /timer:0
 	ContinueConfirmation
 }
 
@@ -313,7 +313,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All
 
 InstallWindowsRSAT
 
-UpdateBGInfoConfig
+UpdateBGInfoConfig "Background Info Configuration" "https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1" BGCONFIG.BGI
 
 RunWindowsUpdates
 
