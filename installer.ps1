@@ -134,14 +134,18 @@ function RunWindowsUpdates {
 
 function InstallWindowsRSAT {
 	Get-WindowsCapability -Name RSAT* -Online | Select-Object -Property DisplayName, State
-	$selection = Read-Host "Do you wish to install Windows RSAT Tools? (y/n)"
-        switch ($selection) {
-        	'y' {
-			Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online   
-            	}
-            	'n' {
-            	}
+	$title    = 'Windows Remote System Administration Tools Installation'
+	$question = 'Do you want to install Windows RSAT, this will take some time...'
+	$choices  = '&Yes', '&No'
+
+	$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+	if ($decision -eq 0) {
+	    Write-Host 'Proceeding to install Windows RSAT... Please Wait...'
+	    Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online
+	} else {
+	    Write-Host 'OK.. Not installing Windows RSAT'
         }
+	ContinueConfirmation
 }
 
 function UpdateBGInfoConfig($name, $url, $filename) {
