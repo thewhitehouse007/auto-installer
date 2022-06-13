@@ -144,6 +144,15 @@ function InstallWindowsRSAT {
         }
 }
 
+function UpdateBGInfoConfig {
+	"Configuring BGInfo Background Informaton Display..."
+    	"Downloading Configu File..."
+	$client.DownloadFile("https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1","$DOWNLOADS\BGCONFIG.BGI")
+	"Loading Configuration..."
+	& C:\BGinfo\BGINFO.EXE $DOWNLOADS\BGCONFIG.BGI /timer:0
+	ContinueConfirmation
+}
+
 function RemoveUWPApps {
 	# To list all appx packages:
 	# Get-AppxPackage | Format-Table -Property Name,Version,PackageFullName
@@ -267,6 +276,7 @@ $adminApps = @"
 	  <package id="wireshark" />
 	  <package id="curl" />
 	  <package id="chocolateygui" />
+	  <package id="bginfo" />
 	  <package id="windirstat" />
 	  <package id="openvpn" />
 	  <package id="sysinternals" />
@@ -302,6 +312,8 @@ DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/dow6lsv0wfsa
 Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All
 
 InstallWindowsRSAT
+
+UpdateBGInfoConfig
 
 RunWindowsUpdates
 
