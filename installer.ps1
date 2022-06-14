@@ -119,8 +119,6 @@ function ChocolateyInstalls {
         pause
     }
     until ($selection -eq 'q')
-
-    ContinueConfirmation
 }
 
 function RunWindowsUpdates {	
@@ -129,7 +127,7 @@ function RunWindowsUpdates {
 	Write-Host "------------------------------------" -ForegroundColor Green
 	Install-Module -Name PSWindowsUpdate -Force
 	Write-Host "Installing updates... (Computer will reboot in minutes...)" -ForegroundColor Green
-	Get-WindowsUpdate -AcceptAll -Install -ForceInstall -AutoReboot
+	Get-WindowsUpdate -AcceptAll -Install -ForceInstall
 }
 
 function InstallWindowsRSAT {
@@ -273,7 +271,6 @@ $adminApps = @"
     <packages>
 	  <package id="putty" />
 	  <package id="filezilla" />
-	  <package id="dotnet4.5" />
 	  <package id="procexp" />
 	  <package id="openssh" />  
 	  <package id="winscp" />
@@ -313,7 +310,7 @@ DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/zhqmaxzw
 
 DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/dow6lsv0wfsalgs/JunosPulse.x64.msi?dl=1" pulse.msi
 
-Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All
+Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All -NoRestart
 
 InstallWindowsRSAT
 
