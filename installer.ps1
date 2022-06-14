@@ -295,7 +295,7 @@ $devApps = @"
 	  <package id="git" />
 	  <package id="silverlight" />  
 	  <package id="vscode" />
-	  <package id="pycharm" />
+	  <package id="pycharm-community" />
     </packages>
 "@
 Set-Content -Path defaultapps.config -Value $defaultApps -Verbose 
