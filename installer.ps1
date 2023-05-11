@@ -1,21 +1,21 @@
 function Check-Command($cmdname) {
-    return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
+	return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
 }
 
 function PreChecks {
-    # Check if this script was Run As Administrator
+	# Check if this script was Run As Administrator
 	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-    IF (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))) {
+	IF (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))) {
 		Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This Script needs to run in admin mode"
-        Start-Sleep -Seconds 5
-        exit
-    }
+		Start-Sleep -Seconds 5
+		exit
+	}
 	# Also check for internet and DNS resolution
-    IF (!(Test-Connection www.dropbox.com -Quiet -Count 2)) {
-        Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This script requires internet access"
-        Start-Sleep -Seconds 5
-        exit
-    }
+	IF (!(Test-Connection www.dropbox.com -Quiet -Count 2)) {
+		Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This script requires internet access"
+		Start-Sleep -Seconds 5
+		exit
+	}
 }
 
 function LicenseActivate {
@@ -66,21 +66,21 @@ function SetExplorerOptions {
 }
 
 function ShowChocMenu {
-    Write-Host ...............................................
-    Write-Host PRESS 1, 2 OR 3 to select your task, or q to QUIT.
-    Write-Host ...............................................
-    Write-Host .
-    Write-Host 1 - Basic apps
-    Write-Host 2 - PowerAdmin apps
-    Write-Host 3 - Developer apps
-    Write-Host u - Upgrade apps
-    Write-Host q - QUIT
-    Write-Host .
+	Write-Host ...............................................
+	Write-Host PRESS 1, 2 OR 3 to select your task, or q to QUIT.
+	Write-Host ...............................................
+	Write-Host .
+	Write-Host 1 - Basic apps
+	Write-Host 2 - PowerAdmin apps
+	Write-Host 3 - Developer apps
+	Write-Host u - Upgrade apps
+	Write-Host q - QUIT
+	Write-Host .
 }
 
 function ChocolateyInstalls {
-    "Starting automatic file installation by chocolatey..."
-    if (Check-Command -cmdname 'choco') {
+	"Starting automatic file installation by chocolatey..."
+	if (Check-Command -cmdname 'choco') {
 		Write-Host "Choco is already installed, skipping installation." -ForegroundColor Yellow
 	}
 	else {
@@ -90,37 +90,37 @@ function ChocolateyInstalls {
 		Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 		[Environment]::SetEnvironmentVariable("Path", $env:Path + ";%ALLUSERSPROFILE%\chocolatey\bin", "Machine")
 	}	
-    choco feature enable -n allowGlobalConfirmation
-    choco upgrade chocolatey
-    do {
-        ShowChocMenu
-        $selection = Read-Host "Please make a selection"
-        switch ($selection)
-        {
-            '1' {
-                choco install -y defaultapps.config   
-            }
-            '2' {
-                choco install -y defaultapps.config   
+	choco feature enable -n allowGlobalConfirmation
+	choco upgrade chocolatey
+	do {
+		ShowChocMenu
+		$selection = Read-Host "Please make a selection"
+		switch ($selection)
+		{
+			'1' {
+				choco install -y defaultapps.config   
+			}
+			'2' {
+				choco install -y defaultapps.config   
 				pause
-                choco install -y adminapps.config   
-            } 
-	    	'3' {
-	    		choco install -y defaultapps.config   
+				choco install -y adminapps.config   
+			} 
+			'3' {
+				choco install -y defaultapps.config   
 				pause
-                choco install -y adminapps.config
+				choco install -y adminapps.config
 				pause
 				choco install -y devapps.config
-	    	}
-            'u' {
-                "Starting choco upgrade..."
-                choco upgrade all
+			}
+			'u' {
+				"Starting choco upgrade..."
+				choco upgrade all
 				RunWindowsUpdates
-            }
-        }
-        pause
-    }
-    until ($selection -eq 'q')
+			}
+		}
+		pause
+	}
+	until ($selection -eq 'q')
 }
 
 function RunWindowsUpdates {	
@@ -134,23 +134,23 @@ function RunWindowsUpdates {
 
 function InstallWindowsRSAT {
 	Get-WindowsCapability -Name RSAT* -Online | Select-Object -Property DisplayName, State
-	$title    = 'Windows Remote System Administration Tools Installation'
+	$title	= 'Windows Remote System Administration Tools Installation'
 	$question = 'Do you want to install Windows RSAT, this will take some time...'
 	$choices  = '&Yes', '&No'
 
 	$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
 	if ($decision -eq 0) {
-	    Write-Host 'Proceeding to install Windows RSAT... Please Wait...'
-	    Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online
+		Write-Host 'Proceeding to install Windows RSAT... Please Wait...'
+		Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online
 	} else {
-	    Write-Host 'OK.. Not installing Windows RSAT'
-        }
+		Write-Host 'OK.. Not installing Windows RSAT'
+	}
 	ContinueConfirmation
 }
 
 function UpdateBGInfoConfig($name, $url, $filename) {
 	"Configuring BGInfo Background Informaton Display..."
-    "Downloading Config File..."
+	"Downloading Config File..."
 	$client.DownloadFile("$url","$DOWNLOADS\$filename")
 	"Loading Configuration..."
 	& C:\BGinfo\BGINFO.EXE $DOWNLOADS\$filename /timer:0
@@ -193,7 +193,6 @@ function Remove-UWP {
 	param (
 		[string]$name
 	)
-
 	Write-Host "Removing UWP $name..." -ForegroundColor Yellow
 	Get-AppxPackage $name | Remove-AppxPackage
 	Get-AppxPackage $name | Remove-AppxPackage -AllUsers
@@ -201,7 +200,7 @@ function Remove-UWP {
 
 function OpenBrowserPage($name, $url) {
 	"Installing $name..."
-    	start-process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
+	start-process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
 	ContinueConfirmation
 }
 
@@ -239,7 +238,7 @@ $defaultApps = @"
 	<package id="anydesk" />
 	</packages>
 "@
-$adminApps = @"	                                  
+$adminApps = @"									  
 <?xml version="1.0" encoding="utf-8"?>
 	<packages>
 	<package id="putty" />
@@ -258,7 +257,7 @@ $adminApps = @"
 	<package id="mobaxterm" />
 	</packages>
 "@
-$devApps = @"	                                  
+$devApps = @"									  
 <?xml version="1.0" encoding="utf-8"?>
 	<packages>
 	<package id="firefox" />
@@ -280,7 +279,11 @@ PreChecks
 "This will download and install selected packages to build a system for a Windows Developer VM"
 ContinueConfirmation
 
-if (Test-Path -Path defaultapps.config -PathType Leaf) {
+if (Test-Path -Path BGCONFIG.BGI -PathType Leaf) {
+	Write-Host "Detected that the script has been run before... Skipping pre-installation tasks" -ForegroundColor Yellow
+	ChocolateyInstalls
+}
+else {
 	"First time running this script... Running pre-installation tasks"
 	LicenseActivate
 
@@ -318,10 +321,6 @@ if (Test-Path -Path defaultapps.config -PathType Leaf) {
 	UpdateBGInfoConfig "Background Info Configuration" "https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1" BGCONFIG.BGI
 
 	RunWindowsUpdates
-}
-else {
-	Write-Host "Detected that the script has been run before... Skipping pre-installation tasks" -ForegroundColor Yellow
-	ChocolateyInstalls
 }
 Write-Host "Installations are now completed!!!" -ForegroundColor Green
 Write-Host "Restarting..." -ForegroundColor Yellow
