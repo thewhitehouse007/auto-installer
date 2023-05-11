@@ -1,3 +1,7 @@
+function Check-Command($cmdname) {
+    return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
+}
+
 function PreChecks {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     IF (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))) {
@@ -14,13 +18,52 @@ function PreChecks {
 
 function LicenseActivate {
 	"Activating license for Windows Evaluation"
-	slmgr /dlv
-	slmgr /rearm
+	slmgr /ato
 	ContinueConfirmation
 }
 
+function RenameComputer {
+	$computerName = Read-Host 'Enter New Computer Name (Suggestion: WinXX-XCustomerX'
+	Write-Host "Renaming this computer to: " $computerName  -ForegroundColor Yellow
+	Rename-Computer -NewName $computerName
+}
+
+function DisableSleeping {
+	Write-Host ""
+	Write-Host "Disable Sleep on AC Power..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	Powercfg /Change monitor-timeout-ac 20
+	Powercfg /Change standby-timeout-ac 0
+}
+
+function SetTimeZone {
+	Write-Host "Setting Time zone..." -ForegroundColor Green
+	Set-TimeZone -Name "E. Australia Standard Time"
+}
+
+function AddThisPCDesktopIcon {
+	Write-Host ""
+	Write-Host "Add 'This PC' Desktop Icon..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	$thisPCIconRegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"
+	$thisPCRegValname = "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" 
+	$item = Get-ItemProperty -Path $thisPCIconRegPath -Name $thisPCRegValname -ErrorAction SilentlyContinue 
+	if ($item) { 
+		Set-ItemProperty  -Path $thisPCIconRegPath -name $thisPCRegValname -Value 0  
+	} 
+	else { 
+		New-ItemProperty -Path $thisPCIconRegPath -Name $thisPCRegValname -Value 0 -PropertyType DWORD | Out-Null  
+	} 
+}
+
+function SetExplorerOptions {
+	Write-Host "Applying file explorer settings..." -ForegroundColor Green
+	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f"
+	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v AutoCheckSelect /t REG_DWORD /d 0 /f"
+	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v LaunchTo /t REG_DWORD /d 1 /f"
+}
+
 function ShowChocMenu {
-    Clear-Host
     Write-Host ...............................................
     Write-Host PRESS 1, 2 OR 3 to select your task, or q to QUIT.
     Write-Host IF this is the FIRST RUN press 3!
@@ -28,15 +71,24 @@ function ShowChocMenu {
     Write-Host .
     Write-Host 1 - Basic apps
     Write-Host 2 - PowerAdmin apps
-    Write-Host 3 - Upgrade apps
+    Write-Host 3 - Developer apps
+    Write-Host u - Upgrade apps
     Write-Host q - QUIT
     Write-Host .
 }
 
 function ChocolateyInstalls {
     "Starting automatic file installation by chocolatey..."
-    powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
-    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";%ALLUSERSPROFILE%\chocolatey\bin", "Machine")
+    if (Check-Command -cmdname 'choco') {
+		Write-Host "Choco is already installed, skip installation."
+	}
+	else {
+		Write-Host ""
+		Write-Host "Installing Chocolate for Windows..." -ForegroundColor Green
+		Write-Host "------------------------------------" -ForegroundColor Green
+		Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+		[Environment]::SetEnvironmentVariable("Path", $env:Path + ";%ALLUSERSPROFILE%\chocolatey\bin", "Machine")
+	}	
     choco feature enable -n allowGlobalConfirmation
     choco upgrade chocolatey
     do {
@@ -49,9 +101,17 @@ function ChocolateyInstalls {
             }
             '2' {
                 choco install -y defaultapps.config   
+		pause
                 choco install -y adminapps.config   
             } 
-            '3' {
+	    '3' {
+	    	choco install -y defaultapps.config   
+		pause
+                choco install -y adminapps.config
+		pause
+		choco install -y devapps.config
+	    }
+            'u' {
                 "Starting choco upgrade..."
                 choco upgrade all
             }
@@ -59,15 +119,88 @@ function ChocolateyInstalls {
         pause
     }
     until ($selection -eq 'q')
+}
 
-    ContinueConfirmation
+function RunWindowsUpdates {	
+	Write-Host ""
+	Write-Host "Checking Windows updates..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	Install-Module -Name PSWindowsUpdate -Force
+	Write-Host "Installing updates... (Computer will reboot in minutes...)" -ForegroundColor Green
+	Get-WindowsUpdate -AcceptAll -Install -ForceInstall
+}
+
+function InstallWindowsRSAT {
+	Get-WindowsCapability -Name RSAT* -Online | Select-Object -Property DisplayName, State
+	$title    = 'Windows Remote System Administration Tools Installation'
+	$question = 'Do you want to install Windows RSAT, this will take some time...'
+	$choices  = '&Yes', '&No'
+
+	$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+	if ($decision -eq 0) {
+	    Write-Host 'Proceeding to install Windows RSAT... Please Wait...'
+	    Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online
+	} else {
+	    Write-Host 'OK.. Not installing Windows RSAT'
+        }
+	ContinueConfirmation
+}
+
+function UpdateBGInfoConfig($name, $url, $filename) {
+	"Configuring BGInfo Background Informaton Display..."
+    	"Downloading Config File..."
+	$client.DownloadFile("$url","$DOWNLOADS\$filename")
+	"Loading Configuration..."
+	& C:\BGinfo\BGINFO.EXE $DOWNLOADS\$filename /timer:0
+	ContinueConfirmation
+}
+
+function RemoveUWPApps {
+	# To list all appx packages:
+	# Get-AppxPackage | Format-Table -Property Name,Version,PackageFullName
+	Write-Host "Removing UWP Rubbish..." -ForegroundColor Green
+	Write-Host "------------------------------------" -ForegroundColor Green
+	$uwpRubbishApps = @(
+		"Microsoft.MSPaint"
+		"Microsoft.Microsoft3DViewer"
+		"Microsoft.ZuneMusic"
+		"Microsoft.ZuneVideo"
+		"Microsoft.WindowsSoundRecorder"
+		"Microsoft.PowerAutomateDesktop"
+		"Microsoft.BingWeather"
+		"Microsoft.BingNews"
+		"Microsoft.Messaging"
+		"Microsoft.WindowsFeedbackHub"
+		"Microsoft.MicrosoftOfficeHub"
+		"Microsoft.MicrosoftSolitaireCollection"
+		"Microsoft.GetHelp"
+		"Microsoft.People"
+		"Microsoft.YourPhone"
+		"Microsoft.Getstarted"
+		"Microsoft.Microsoft3DViewer"
+		"Microsoft.WindowsMaps"
+		"Microsoft.MixedReality.Portal"
+		"Microsoft.SkypeApp"
+	)
+	foreach ($uwp in $uwpRubbishApps) {
+		Remove-UWP $uwp
+	}
+}
+
+function Remove-UWP {
+	param (
+		[string]$name
+	)
+
+	Write-Host "Removing UWP $name..." -ForegroundColor Yellow
+	Get-AppxPackage $name | Remove-AppxPackage
+	Get-AppxPackage $name | Remove-AppxPackage -AllUsers
 }
 
 function OpenBrowserPage($name, $url) {
 	"Installing $name..."
-    start-process -FilePath 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
+    	start-process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
 	ContinueConfirmation
-
 }
 
 function DownloadInstall($name, $url, $filename) {
@@ -89,7 +222,6 @@ function ContinueConfirmation {
 
 
 
-
 $client = new-object System.Net.WebClient
 $DOWNLOADS="$Home\Downloads"
 cd $DOWNLOADS
@@ -99,26 +231,37 @@ cd $DOWNLOADS
 #Also check for internet and DNS resolution
 PreChecks
 
-"This will download and install all packages to build a system from scratch"
+"This will download and install all packages to build a system from a fresh Windows install"
 ContinueConfirmation
 
 LicenseActivate
 
+RenameComputer
+
+DisableSleeping
+
+SetTimeZone
+
+AddThisPCDesktopIcon
+
+SetExplorerOptions
+
+RemoveUWPApps
+
 DownloadInstall "PSTools" "https://dl.dropbox.com/s/jhj653f2iuz2x59/pstools.exe?dl=1" pstools.exe
 [Environment]::SetEnvironmentVariable("Path", $env:Path + ";c:\pstools\pstools\;c:\pstools\putty\", "Machine")
-
 
 $defaultApps = @"
 <?xml version="1.0" encoding="utf-8"?>
     <packages>
 	  <package id="virtualbox-guest-additions-guest.install" />
-      <package id="flashplayerplugin" />
 	  <package id="googlechrome" />
 	  <package id="7zip" />
 	  <package id="jre8" />
 	  <package id="notepadplusplus" />
 	  <package id="dropbox" />  
 	  <package id="teamviewer" />
+	  <package id="zoom" />
 	  <package id="avastfreeantivirus" />
 	  <package id="anydesk" />
     </packages>
@@ -128,23 +271,36 @@ $adminApps = @"
     <packages>
 	  <package id="putty" />
 	  <package id="filezilla" />
-	  <package id="dotnet4.5" />
 	  <package id="procexp" />
 	  <package id="openssh" />  
 	  <package id="winscp" />
 	  <package id="wireshark" />
 	  <package id="curl" />
 	  <package id="chocolateygui" />
+	  <package id="bginfo" />
 	  <package id="windirstat" />
 	  <package id="openvpn" />
-	  <package id="rsat" />
+	  <package id="sysinternals" />
 	  <package id="forticlientvpn" />
 	  <package id="nmap" />
 	  <package id="mobaxterm" />
     </packages>
 "@
+$devApps = @"	                                  
+<?xml version="1.0" encoding="utf-8"?>
+    <packages>
+	  <package id="firefox" />
+	  <package id="python3" />
+	  <package id="dotnetfx" />
+	  <package id="git" />
+	  <package id="silverlight" />  
+	  <package id="vscode" />
+	  <package id="pycharm-community" />
+    </packages>
+"@
 Set-Content -Path defaultapps.config -Value $defaultApps -Verbose 
 Set-Content -Path adminapps.config -Value $adminApps -Verbose 
+Set-Content -Path devapps.config -Value $devApps -Verbose 
 
 ChocolateyInstalls
 
@@ -154,8 +310,13 @@ DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/zhqmaxzw
 
 DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/dow6lsv0wfsalgs/JunosPulse.x64.msi?dl=1" pulse.msi
 
-Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All
+Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All -NoRestart
 
+InstallWindowsRSAT
+
+UpdateBGInfoConfig "Background Info Configuration" "https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1" BGCONFIG.BGI
+
+RunWindowsUpdates
 
 "Installations are now completed!!!" 
 ContinueConfirmation
