@@ -310,7 +310,7 @@ else {
 
 	OpenBrowserPage "Webex Meeting Tools" "https://www.webex.com/downloads.html"
 
-	DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/zhqmaxzwxsqm2g6/anyconnect-win-3.1.05152-pre-deploy-k9.msi?dl=1" anyconnect.msi
+	DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/npapxl5o78qbknm/anyconnect-win-4.9.06037-core-vpn-webdeploy-k9.msi?dl=1" anyconnect.msi
 
 	DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/fnpgfikwos0ool7/ps-pulse-win-9.1r5.0-b2101-64bitinstaller.msi?dl=1" pulse.msi
 
