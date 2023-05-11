@@ -1,12 +1,15 @@
-# Windows 10 Test/Project Machine Setup
+# Windows 10/11 Test/Project Machine Setup
 
 This is the script to setup a new test VM.
 
 ## Prerequisites
 
 - A clean install of Windows 10 Pro v21H1 en-us or above.
+- Internet Access
 
-> This script has not been tested on other version of Windows, please be careful if you are using it on other Windows versions.
+> This script has been designed to run on Windows Development images of Windows 10 and 11. Which can be found here...
+> https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
+> It not been tested on other version of Windows, please be careful if you are using it on other Windows versions.
 ## One-key install
 
 Open Windows PowerShell(Admin)
@@ -36,14 +39,12 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
     - Cisco VPN Client
     - Pulse VPN Client
     - Webex
-- Not yet setup but consider the following
-    - Visual Studio Code
+- Included in the Dev Install Option
+    - Python
     - Git
-    - GitHub for Windows
-    - OpenSSL
-    - Beyond Compare
-    - PowerShell 7
-- Remove a few pre-installed UWP applications
+    - Visual Studio Code
+    - Plus other supporting components
+- Removes a few pre-installed UWP applications
     - Messaging
     - Bing News
     - Solitaire
@@ -51,3 +52,7 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
     - Feedback Hub
     - Your Phone
     - My Office
+- Not yet setup but consider the following
+    - OpenSSL
+    - Beyond Compare
+    - PowerShell 7

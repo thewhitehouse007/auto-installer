@@ -3,12 +3,14 @@ function Check-Command($cmdname) {
 }
 
 function PreChecks {
-    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    # Check if this script was Run As Administrator
+	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     IF (!($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))) {
-        Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This Script needs to run in admin mode"
+		Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This Script needs to run in admin mode"
         Start-Sleep -Seconds 5
         exit
     }
+	# Also check for internet and DNS resolution
     IF (!(Test-Connection www.dropbox.com -Quiet -Count 2)) {
         Write-Host -ForegroundColor Red -BackgroundColor Black "ERROR: This script requires internet access"
         Start-Sleep -Seconds 5
@@ -66,7 +68,6 @@ function SetExplorerOptions {
 function ShowChocMenu {
     Write-Host ...............................................
     Write-Host PRESS 1, 2 OR 3 to select your task, or q to QUIT.
-    Write-Host IF this is the FIRST RUN press 3!
     Write-Host ...............................................
     Write-Host .
     Write-Host 1 - Basic apps
@@ -80,7 +81,7 @@ function ShowChocMenu {
 function ChocolateyInstalls {
     "Starting automatic file installation by chocolatey..."
     if (Check-Command -cmdname 'choco') {
-		Write-Host "Choco is already installed, skip installation."
+		Write-Host "Choco is already installed, skipping installation." -ForegroundColor Yellow
 	}
 	else {
 		Write-Host ""
@@ -101,19 +102,20 @@ function ChocolateyInstalls {
             }
             '2' {
                 choco install -y defaultapps.config   
-		pause
+				pause
                 choco install -y adminapps.config   
             } 
-	    '3' {
-	    	choco install -y defaultapps.config   
-		pause
+	    	'3' {
+	    		choco install -y defaultapps.config   
+				pause
                 choco install -y adminapps.config
-		pause
-		choco install -y devapps.config
-	    }
+				pause
+				choco install -y devapps.config
+	    	}
             'u' {
                 "Starting choco upgrade..."
                 choco upgrade all
+				RunWindowsUpdates
             }
         }
         pause
@@ -148,7 +150,7 @@ function InstallWindowsRSAT {
 
 function UpdateBGInfoConfig($name, $url, $filename) {
 	"Configuring BGInfo Background Informaton Display..."
-    	"Downloading Config File..."
+    "Downloading Config File..."
 	$client.DownloadFile("$url","$DOWNLOADS\$filename")
 	"Loading Configuration..."
 	& C:\BGinfo\BGINFO.EXE $DOWNLOADS\$filename /timer:0
@@ -220,104 +222,107 @@ function ContinueConfirmation {
 	}
 }
 
-
-
-$client = new-object System.Net.WebClient
-$DOWNLOADS="$Home\Downloads"
-cd $DOWNLOADS
-
-"Starting automatic file installation"
-#Check if this script was Run As Administrator
-#Also check for internet and DNS resolution
-PreChecks
-
-"This will download and install all packages to build a system from a fresh Windows install"
-ContinueConfirmation
-
-LicenseActivate
-
-RenameComputer
-
-DisableSleeping
-
-SetTimeZone
-
-AddThisPCDesktopIcon
-
-SetExplorerOptions
-
-RemoveUWPApps
-
-DownloadInstall "PSTools" "https://dl.dropbox.com/s/jhj653f2iuz2x59/pstools.exe?dl=1" pstools.exe
-[Environment]::SetEnvironmentVariable("Path", $env:Path + ";c:\pstools\pstools\;c:\pstools\putty\", "Machine")
-
+# Chocolately Apps Selection Groups
 $defaultApps = @"
 <?xml version="1.0" encoding="utf-8"?>
-    <packages>
-	  <package id="virtualbox-guest-additions-guest.install" />
-	  <package id="googlechrome" />
-	  <package id="7zip" />
-	  <package id="jre8" />
-	  <package id="notepadplusplus" />
-	  <package id="dropbox" />  
-	  <package id="teamviewer" />
-	  <package id="zoom" />
-	  <package id="avastfreeantivirus" />
-	  <package id="anydesk" />
-    </packages>
+	<packages>
+	<package id="virtualbox-guest-additions-guest.install" />
+	<package id="googlechrome" />
+	<package id="7zip" />
+	<package id="jre8" />
+	<package id="notepadplusplus" />
+	<package id="dropbox" />  
+	<package id="teamviewer" />
+	<package id="zoom" />
+	<package id="bginfo" />
+	<package id="avastfreeantivirus" />
+	<package id="anydesk" />
+	</packages>
 "@
 $adminApps = @"	                                  
 <?xml version="1.0" encoding="utf-8"?>
-    <packages>
-	  <package id="putty" />
-	  <package id="filezilla" />
-	  <package id="procexp" />
-	  <package id="openssh" />  
-	  <package id="winscp" />
-	  <package id="wireshark" />
-	  <package id="curl" />
-	  <package id="chocolateygui" />
-	  <package id="bginfo" />
-	  <package id="windirstat" />
-	  <package id="openvpn" />
-	  <package id="sysinternals" />
-	  <package id="forticlientvpn" />
-	  <package id="nmap" />
-	  <package id="mobaxterm" />
-    </packages>
+	<packages>
+	<package id="putty" />
+	<package id="filezilla" />
+	<package id="procexp" />
+	<package id="openssh" />  
+	<package id="winscp" />
+	<package id="wireshark" />
+	<package id="curl" />
+	<package id="chocolateygui" />
+	<package id="windirstat" />
+	<package id="openvpn" />
+	<package id="sysinternals" />
+	<package id="forticlientvpn" />
+	<package id="nmap" />
+	<package id="mobaxterm" />
+	</packages>
 "@
 $devApps = @"	                                  
 <?xml version="1.0" encoding="utf-8"?>
-    <packages>
-	  <package id="firefox" />
-	  <package id="python3" />
-	  <package id="dotnetfx" />
-	  <package id="git" />
-	  <package id="silverlight" />  
-	  <package id="vscode" />
-	  <package id="pycharm-community" />
-    </packages>
+	<packages>
+	<package id="firefox" />
+	<package id="python3" />
+	<package id="dotnetfx" />
+	<package id="git" />
+	<package id="silverlight" />  
+	<package id="vscode" />
+	</packages>
 "@
-Set-Content -Path defaultapps.config -Value $defaultApps -Verbose 
-Set-Content -Path adminapps.config -Value $adminApps -Verbose 
-Set-Content -Path devapps.config -Value $devApps -Verbose 
 
-ChocolateyInstalls
+## START OF MAIN SCRIPT ##
+$client = new-object System.Net.WebClient
+$DOWNLOADS="$Home\Downloads"
+Set-Location $DOWNLOADS
 
-OpenBrowserPage "Webex Meeting Tools" "https://www.webex.com/downloads.html"
-
-DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/zhqmaxzwxsqm2g6/anyconnect-win-3.1.05152-pre-deploy-k9.msi?dl=1" anyconnect.msi
-
-DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/dow6lsv0wfsalgs/JunosPulse.x64.msi?dl=1" pulse.msi
-
-Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All -NoRestart
-
-InstallWindowsRSAT
-
-UpdateBGInfoConfig "Background Info Configuration" "https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1" BGCONFIG.BGI
-
-RunWindowsUpdates
-
-"Installations are now completed!!!" 
+"Starting automatic file installation script"
+PreChecks
+"This will download and install selected packages to build a system for a Windows Developer VM"
 ContinueConfirmation
+
+if (Test-Path -Path defaultapps.config -PathType Leaf) {
+	"First time running this script... Running pre-installation tasks"
+	LicenseActivate
+
+	RenameComputer
+
+	DisableSleeping
+
+	SetTimeZone
+
+	AddThisPCDesktopIcon
+
+	SetExplorerOptions
+
+	RemoveUWPApps
+
+	DownloadInstall "PSTools" "https://dl.dropbox.com/s/jhj653f2iuz2x59/pstools.exe?dl=1" pstools.exe
+	[Environment]::SetEnvironmentVariable("Path", $env:Path + ";c:\pstools\pstools\;c:\pstools\putty\", "Machine")
+
+	Set-Content -Path defaultapps.config -Value $defaultApps -Verbose 
+	Set-Content -Path adminapps.config -Value $adminApps -Verbose 
+	Set-Content -Path devapps.config -Value $devApps -Verbose 
+
+	ChocolateyInstalls
+
+	OpenBrowserPage "Webex Meeting Tools" "https://www.webex.com/downloads.html"
+
+	DownloadInstall "Cisco AnyConnect VPN Client" "https://dl.dropbox.com/s/zhqmaxzwxsqm2g6/anyconnect-win-3.1.05152-pre-deploy-k9.msi?dl=1" anyconnect.msi
+
+	DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/fnpgfikwos0ool7/ps-pulse-win-9.1r5.0-b2101-64bitinstaller.msi?dl=1" pulse.msi
+
+	Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All -NoRestart
+
+	InstallWindowsRSAT
+
+	UpdateBGInfoConfig "Background Info Configuration" "https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1" BGCONFIG.BGI
+
+	RunWindowsUpdates
+}
+else {
+	Write-Host "Detected that the script has been run before... Skipping pre-installation tasks" -ForegroundColor Yellow
+	ChocolateyInstalls
+}
+Write-Host "Installations are now completed!!!" -ForegroundColor Green
+Write-Host "Restarting..." -ForegroundColor Yellow
 Restart-Computer -Confirm
