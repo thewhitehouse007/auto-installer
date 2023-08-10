@@ -314,7 +314,7 @@ else {
 
 	DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/fnpgfikwos0ool7/ps-pulse-win-9.1r5.0-b2101-64bitinstaller.msi?dl=1" pulse.msi
 
-	DownloadInstall "FortiClient VPN" "https://links.fortinet.com/forticlient/win/vpnagent" FortiClientVPNOnlineInstaller.exe
+	OpenBrowserPage "FortiClient VPN" "https://links.fortinet.com/forticlient/win/vpnagent"
 
 	Enable-WindowsOptionalFeature -Online -FeatureName "TelnetClient" -All -NoRestart
 
