@@ -21,7 +21,6 @@ function PreChecks {
 function LicenseActivate {
 	"Activating license for Windows Evaluation"
 	slmgr /ato
-	ContinueConfirmation
 }
 
 function RenameComputer {
@@ -145,16 +144,19 @@ function InstallWindowsRSAT {
 	} else {
 		Write-Host 'OK.. Not installing Windows RSAT'
 	}
-	ContinueConfirmation
 }
 
 function UpdateBGInfoConfig($name, $url, $filename) {
-	"Configuring BGInfo Background Informaton Display..."
-	"Downloading Config File..."
-	$client.DownloadFile("$url","$DOWNLOADS\$filename")
-	"Loading Configuration..."
-	& C:\BGinfo\BGINFO.EXE $DOWNLOADS\$filename /timer:0
-	ContinueConfirmation
+	$confirmation = ContinueConfirmation($name)
+	if ($confirmation -eq "y") {
+		"Configuring BGInfo Background Informaton Display..."
+		"Downloading Config File..."
+		$client.DownloadFile("$url","$DOWNLOADS\$filename")
+		"Loading Configuration..."
+		& C:\BGinfo\BGINFO.EXE $DOWNLOADS\$filename /timer:0
+	} elseif ($confirmation -eq "n") {
+		"OK.. Skipping $name"
+	}
 }
 
 function RemoveUWPApps {
@@ -199,25 +201,37 @@ function Remove-UWP {
 }
 
 function OpenBrowserPage($name, $url) {
-	"Installing $name..."
-	start-process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
-	ContinueConfirmation
+	$confirmation = ContinueConfirmation($name)
+	if ($confirmation -eq "y") {
+		"Installing $name..."
+		start-process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
+	} elseif ($confirmation -eq "n") {
+		"OK.. Skipping $name"
+	}
 }
 
 function DownloadInstall($name, $url, $filename) {
-	"Downloading $name..."
-	$client.DownloadFile("$url","$DOWNLOADS\$filename")
-	"Installing $name..."
-	& $DOWNLOADS\$filename
-	ContinueConfirmation
+	$confirmation = ContinueConfirmation($name)
+	if ($confirmation -eq "y") {
+		"Downloading $name..."
+		$client.DownloadFile("$url","$DOWNLOADS\$filename")
+		"Installing $name..."
+		& $DOWNLOADS\$filename
+	} elseif ($confirmation -eq "n") {
+		"OK.. Skipping $name"
+	}
 }
 
-function ContinueConfirmation {
-	$Confirmation = Read-Host "Done... Continue? [y/n]"
-	while($Confirmation -ne "y")
-	{
-		if ($Confirmation -eq 'n') {exit}
-		$Confirmation = Read-Host "Done... Continue? [y/n]"
+function ContinueConfirmation($name) {
+	$title	= $name
+	$question = "Do you want to install $name?"
+	$choices  = '&Yes', '&No'
+
+	$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+	if ($decision -eq 0) {
+		return "y"
+	} else {
+		return "n"
 	}
 }
 
@@ -276,7 +290,6 @@ Set-Location $DOWNLOADS
 "Starting automatic file installation script"
 PreChecks
 "This will download and install selected packages to build a system for a Windows Developer VM"
-ContinueConfirmation
 
 if (Test-Path -Path BGCONFIG.BGI -PathType Leaf) {
 	Write-Host "Detected that the script has been run before... Skipping pre-installation tasks" -ForegroundColor Yellow
