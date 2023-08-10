@@ -252,7 +252,6 @@ $adminApps = @"
 	<package id="windirstat" />
 	<package id="openvpn" />
 	<package id="sysinternals" />
-	<package id="forticlientvpn" />
 	<package id="nmap" />
 	<package id="mobaxterm" />
 	</packages>
