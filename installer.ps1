@@ -1,4 +1,4 @@
-function Check-Command($cmdname) {
+function CheckInstalled($cmdname) {
 	return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
 }
 
@@ -79,14 +79,14 @@ function ShowChocMenu {
 
 function ChocolateyInstalls {
 	"Starting automatic file installation by chocolatey..."
-	if (Check-Command -cmdname 'choco') {
+	if (CheckInstalled -cmdname 'choco') {
 		Write-Host "Choco is already installed, skipping installation." -ForegroundColor Yellow
 	}
 	else {
 		Write-Host ""
 		Write-Host "Installing Chocolate for Windows..." -ForegroundColor Green
 		Write-Host "------------------------------------" -ForegroundColor Green
-		Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+		Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 		[Environment]::SetEnvironmentVariable("Path", $env:Path + ";%ALLUSERSPROFILE%\chocolatey\bin", "Machine")
 	}	
 	choco feature enable -n allowGlobalConfirmation
