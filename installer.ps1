@@ -235,7 +235,7 @@ function ContinueConfirmation($name) {
 	$question = "Do you want to install $name?"
 	$choices  = '&Yes', '&No'
 
-	$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+	$decision = $Host.UI.PromptForChoice($title, $question, $choices, 0)
 	if ($decision -eq 0) {
 		return "y"
 	} else {
