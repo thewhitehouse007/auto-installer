@@ -122,13 +122,21 @@ function ChocolateyInstalls {
 	until ($selection -eq 'q')
 }
 
-function RunWindowsUpdates {	
-	Write-Host ""
-	Write-Host "Checking Windows updates..." -ForegroundColor Green
-	Write-Host "------------------------------------" -ForegroundColor Green
-	Install-Module -Name PSWindowsUpdate -Force
-	Write-Host "Installing updates... (Computer will reboot in minutes...)" -ForegroundColor Green
-	Get-WindowsUpdate -AcceptAll -Install -ForceInstall
+function RunWindowsUpdates {
+	$name = "Windows Updates"	
+	$confirmation = ContinueConfirmation($name)
+	if ($confirmation -eq "y") {
+		Write-Host ""
+		Write-Host "Checking Windows updates..." -ForegroundColor Green
+		Write-Host "------------------------------------" -ForegroundColor Green
+		Install-Module -Name PSWindowsUpdate -Force
+		Write-Host "Installing updates... (Computer will reboot in minutes...)" -ForegroundColor Green
+		Get-WindowsUpdate -AcceptAll -Install -ForceInstall
+	} elseif ($confirmation -eq "n") {
+		Write-Host "OK.. Skipping $name" -ForegroundColor Yellow
+		Write-Host "You really shouldn't skip $name..." -ForegroundColor Red
+		Write-Host "Re-Run setup to install $name" -ForegroundColor Yellow
+	}
 }
 
 function InstallWindowsRSAT {
