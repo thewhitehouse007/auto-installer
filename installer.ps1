@@ -161,7 +161,7 @@ function UpdateBGInfoConfig($name, $url, $filename) {
 		"Downloading Config File..."
 		$client.DownloadFile("$url","$DOWNLOADS\$filename")
 		"Loading Configuration..."
-		& C:\ProgramDate\chocolatey\lib\bginfo\tools\Bginfo.exe $DOWNLOADS\$filename /timer:0
+		& C:\ProgramData\chocolatey\lib\bginfo\tools\Bginfo.exe $DOWNLOADS\$filename /timer:0
 	} elseif ($confirmation -eq "n") {
 		"OK.. Skipping $name"
 	}
