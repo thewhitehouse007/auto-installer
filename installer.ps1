@@ -24,7 +24,7 @@ function LicenseActivate {
 }
 
 function RenameComputer {
-	$computerName = Read-Host 'Enter New Computer Name (Suggestion: WinXX-XCustomerX'
+	$computerName = Read-Host 'Enter New Computer Name (Suggestion: WinXX-XCustomerX)'
 	Write-Host "Renaming this computer to: " $computerName  -ForegroundColor Yellow
 	Rename-Computer -NewName $computerName
 }
@@ -221,9 +221,9 @@ function OpenBrowserPage($name, $url) {
 function DownloadInstall($name, $url, $filename) {
 	$confirmation = ContinueConfirmation($name)
 	if ($confirmation -eq "y") {
-		"Downloading $name..."
+		Write-Host "Downloading $name..." -ForegroundColor Green
 		$client.DownloadFile("$url","$DOWNLOADS\$filename")
-		"Installing $name..."
+		Write-Host "Installing $name..." -ForegroundColor Green
 		& $DOWNLOADS\$filename
 	} elseif ($confirmation -eq "n") {
 		Write-Host "OK.. Skipping $name" -ForegroundColor Yellow
