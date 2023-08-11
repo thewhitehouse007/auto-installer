@@ -153,7 +153,7 @@ function UpdateBGInfoConfig($name, $url, $filename) {
 		"Downloading Config File..."
 		$client.DownloadFile("$url","$DOWNLOADS\$filename")
 		"Loading Configuration..."
-		& C:\BGinfo\BGINFO.EXE $DOWNLOADS\$filename /timer:0
+		& C:\ProgramDate\chocolatey\lib\bginfo\Bginfo.exe $DOWNLOADS\$filename /timer:0
 	} elseif ($confirmation -eq "n") {
 		"OK.. Skipping $name"
 	}
@@ -218,7 +218,7 @@ function DownloadInstall($name, $url, $filename) {
 		"Installing $name..."
 		& $DOWNLOADS\$filename
 	} elseif ($confirmation -eq "n") {
-		"OK.. Skipping $name"
+		Write-Host "OK.. Skipping $name" -ForegroundColor Yellow
 	}
 }
 
