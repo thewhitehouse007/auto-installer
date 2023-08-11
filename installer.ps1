@@ -211,10 +211,10 @@ function Remove-UWP {
 function OpenBrowserPage($name, $url) {
 	$confirmation = ContinueConfirmation($name)
 	if ($confirmation -eq "y") {
-		"Installing $name..."
+		Write-Host "Going to $name..." -ForegroundColor Green
 		start-process -FilePath 'C:\Program Files\Google\Chrome\Application\chrome.exe' -ArgumentList "$url"
 	} elseif ($confirmation -eq "n") {
-		"OK.. Skipping $name"
+		Write-Host "OK.. Skipping $name" -ForegroundColor Yellow
 	}
 }
 
