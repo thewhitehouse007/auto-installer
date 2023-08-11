@@ -62,6 +62,8 @@ function SetExplorerOptions {
 	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f"
 	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v AutoCheckSelect /t REG_DWORD /d 0 /f"
 	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v LaunchTo /t REG_DWORD /d 1 /f"
+	cmd.exe /c "reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v TaskbarMn /t REG_DWORD /d 0 /f"
+	cmd.exe /c "reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Chat' /v ChatIcon /t REG_DWORD /d 3 /f"
 }
 
 function ShowChocMenu {
