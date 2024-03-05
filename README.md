@@ -1,4 +1,4 @@
-# Windows 10/11 Test/Project Machine Setup
+# Windows 10 & 11 Test/Project Machine Setup
 
 This is the script to setup a new test VM.
 
@@ -10,7 +10,7 @@ This is the script to setup a new test VM.
 > This script has been designed to run on Windows Development images of Windows 10 and 11. Which can be found here...
 > https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
 > It not been tested on other version of Windows, please be careful if you are using it on other Windows versions.
-## One-key install
+## One-Step install
 
 Open Windows PowerShell(Admin)
 
@@ -20,39 +20,65 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
 
 ### Workflow for installer.ps1
 
+- Activates the Dev License
 - Set a New Computer Name
 - Disable Sleep on AC Power
+- Sets the Timezone
 - Add 'This PC' Desktop Icon
-- Install Chocolate for Windows
-    - 7-Zip
-    - Google Chrome
-    - Microsoft Teams
-    - FileZilla
-    - Notepad++
-    - Chocolatey GUI
+- Install Chocolatey for Windows
+- Default Applications installed
     - VirtualBox GuestAdditions
-    - Anydesk
+    - Google Chrome
+    - 7-Zip
+    - Notepad++
+    - Dropbox
     - Teamviewer
-    - Putty
-    - Wireshark
-    - Fortinet VPN Client
+    - Zoom
+    - Anydesk
+    - PSTools
+    - Webex
     - Cisco VPN Client
     - Pulse VPN Client
-    - Webex
-- Included in the Dev Install Option
+    - Fortinet VPN Client
+    - Telnet Client
+    - bgInfo
+- Optional Administratior install, includes...
+    - Putty
+    - FileZilla
+    - OpenSSH
+    - WinSCP
+    - Wireshark
+    - cURL
+    - Chocolatey GUI
+    - WinDirStat
+    - OpenVPN
+    - SysInternals
+    - Nmap
+    - Mobaxterm
+- Optional Dev install, includes...
+    - Firefox
     - Python
+    - dotNetFX
     - Git
+    - Silverlight
     - Visual Studio Code
-    - Plus other supporting components
 - Removes a few pre-installed UWP applications
-    - Messaging
+    - 3DViewer
+    - Zune
+    - Bing Weather
     - Bing News
+    - Messaging
     - Solitaire
+    - GetHelp
     - People
-    - Feedback Hub
     - Your Phone
-    - My Office
-- Not yet setup but consider the following
-    - OpenSSL
-    - Beyond Compare
-    - PowerShell 7
+    - Office Hub
+    - Feedback Hub
+    - Windows Maps
+    - SkypeApp
+    - Mixed Reality Portal
+    - etc.
+- Installs Windows Remote System Administration Tools (Optional Prompt)
+- Performs a Windows Update
+
+Running the Script a second time runs the chocolatey installer, this will prompt you if you would like to install additional software options or upgrade your already installed apps.

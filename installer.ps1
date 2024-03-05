@@ -175,7 +175,6 @@ function RemoveUWPApps {
 	Write-Host "Removing UWP Rubbish..." -ForegroundColor Green
 	Write-Host "------------------------------------" -ForegroundColor Green
 	$uwpRubbishApps = @(
-		"Microsoft.MSPaint"
 		"Microsoft.Microsoft3DViewer"
 		"Microsoft.ZuneMusic"
 		"Microsoft.ZuneVideo"
