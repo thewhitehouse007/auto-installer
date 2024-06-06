@@ -257,7 +257,6 @@ $defaultApps = @"
 	<package id="teamviewer" />
 	<package id="zoom" />
 	<package id="bginfo" />
-	<package id="avastfreeantivirus" />
 	<package id="anydesk" />
 	</packages>
 "@
