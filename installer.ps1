@@ -254,10 +254,8 @@ $defaultApps = @"
 	<package id="jre8" />
 	<package id="notepadplusplus" />
 	<package id="dropbox" />  
-	<package id="teamviewer" />
 	<package id="zoom" />
 	<package id="bginfo" />
-	<package id="anydesk" />
 	</packages>
 "@
 $adminApps = @"									  
@@ -276,6 +274,7 @@ $adminApps = @"
 	<package id="sysinternals" />
 	<package id="nmap" />
 	<package id="mobaxterm" />
+	<package id="teracopy" />
 	</packages>
 "@
 $devApps = @"									  

@@ -32,9 +32,7 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
     - 7-Zip
     - Notepad++
     - Dropbox
-    - Teamviewer
     - Zoom
-    - Anydesk
     - PSTools
     - Webex
     - Cisco VPN Client
@@ -55,6 +53,7 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
     - SysInternals
     - Nmap
     - Mobaxterm
+    - TeraCopy
 - Optional Dev install, includes...
     - Firefox
     - Python
