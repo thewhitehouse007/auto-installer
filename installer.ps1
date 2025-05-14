@@ -331,7 +331,7 @@ else {
 
 	DownloadInstall "Cisco Secure Client" "https://dl.dropbox.com/scl/fi/em9zx2actqp4dibke94ol/cisco-secure-client-win-5.0.03076-core-vpn-webdeploy-k9.msi?rlkey=juuv585h1gxzgrttyg504ik8d&dl=1" anyconnect.msi
 
-	DownloadInstall "Pulse Secure VPN Client" "https://dl.dropbox.com/s/fnpgfikwos0ool7/ps-pulse-win-9.1r5.0-b2101-64bitinstaller.msi?dl=1" pulse.msi
+	DownloadInstall "Juniper Secure Connect VPN Client" "https://dl.dropbox.com/scl/fi/tjswqwdaxjdimwceybm4d/Juniper-Secure-Connect_Windows_x86-64_23.4.13.16_29678.exe?rlkey=5dfo20vycqyeqzvet9dkc0n91&dl=1" jsc.exe
 
 	OpenBrowserPage "FortiClient VPN" "https://links.fortinet.com/forticlient/win/vpnagent"
 
@@ -339,7 +339,7 @@ else {
 
 	InstallWindowsRSAT
 
-	UpdateBGInfoConfig "Background Info Configuration" "https://dl.dropbox.com/s/btirjbbxfax527l/BGCONFIG.BGI?dl=1" BGCONFIG.BGI
+	UpdateBGInfoConfig "Background Info Configuration" "https://dl.dropbox.com/scl/fi/lkq4ahv9slokspw801p4i/BGCONFIG.BGI?rlkey=43q6yhzwi9ko55c4ni7e99w5h&dl=1" BGCONFIG.BGI
 
 	RunWindowsUpdates
 }
