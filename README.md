@@ -1,6 +1,6 @@
 # Windows 10 & 11 Test/Project Machine Setup
 
-This is the script to setup a new test VM.
+This is the script to set up a new test VM.
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@ This is the script to setup a new test VM.
 
 > This script has been designed to run on Windows Development images of Windows 10 and 11. Which can be found here...
 > https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/
-> It not been tested on other version of Windows, please be careful if you are using it on other Windows versions.
+> It has not been tested on other versions of Windows. Please be careful if you are using it on other Windows versions.
 ## One-Step install
 
 Open Windows PowerShell(Admin)
@@ -36,11 +36,11 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercon
     - PSTools
     - Webex
     - Cisco VPN Client
-    - Pulse VPN Client
+    - Juniper Secure Connect VPN Client
     - Fortinet VPN Client
     - Telnet Client
     - bgInfo
-- Optional Administratior install, includes...
+- Optional Administrator install, includes...
     - Putty
     - FileZilla
     - OpenSSH
